@@ -25,11 +25,6 @@ public class ToDoList {
 	
 	private Scanner userInput = new Scanner(System.in);
 	
-	public static void main(String[] args) {
-		ToDoList todolist = new ToDoList(new ArrayList<Item>());
-		todolist.start();
-	}
-	
 	public ToDoList(ArrayList<Item> itemList){
 		this.itemList = itemList;
 		index = new ModularIndex(itemList.size());
@@ -124,81 +119,4 @@ public class ToDoList {
 		String content = userInput.nextLine();
 		addItem(content);
 	}
-	
-	public void close(){
-		quit = true;
-		System.out.println("Saving...");
-		save();
-	}
-	
-	public void save(){
-		try{
-			FileOutputStream outputStream = new FileOutputStream("Data.txt");
-			ObjectOutputStream objectStream = new ObjectOutputStream(outputStream);
-			
-			objectStream.writeObject(itemList);
-			objectStream.close();
-		}catch(IOException e){
-			System.out.println("Saving failed!");
-		}
-	}
-	
-	public void load(){
-		try{
-			//if the file exists already then we have to load it
-			//if not we have to create it for saving later
-			File data = new File("Data.txt");
-			if(!data.createNewFile()){
-				FileInputStream inputStream = new FileInputStream("Data.txt");
-				ObjectInputStream objectStream = new ObjectInputStream(inputStream);
-				
-				itemList = (ArrayList<Item>)objectStream.readObject();
-				index = new ModularIndex(itemList.size());
-				updateCurrentlySelectedItem();
-				
-				objectStream.close();
-			}
-		}catch(IOException e){
-			System.out.println("Error occurred loading!");
-		}catch(ClassNotFoundException e){
-			System.out.println("Error occurred loading!");
-		}
-	}
-	
-	public void handleBaseSelection(){
-		BaseSelectionHandler handler = new BaseSelectionHandler(this);
-		String selection = userInput.nextLine();
-		
-		try{
-			Command handleCommand = handler.handle(selection);
-			handleCommand.execute();
-		}catch(NoRuleException e){
-			//System.out.println(e);
-		}
-	}
-	
-	public void clearScreen(){
-		try{
-			new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-		}catch(Exception e){
-			System.out.println("Huge Problem!");
-		}
-	}
-	
-	public void resetScreen(){
-		clearScreen();
-		displayItems();
-		displayStatusMessage();
-	}
-	
-	public void start(){
-		load();
-		
-		clearScreen();
-		while(!quit){
-			resetScreen();
-			handleBaseSelection();
-		}
-	}
-
 }

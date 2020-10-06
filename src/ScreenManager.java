@@ -11,11 +11,27 @@ public class ScreenManager {
 	}
 	
 	public static void displayItems(ArrayList<Item> itemList){
-		
+		System.out.println("_______________________________________");
+		System.out.println("---------------------------------------");
+		for(int i = 0; i < itemList.size(); i++){
+			System.out.println(itemList.get(i));
+			System.out.println("---------------------------------------");
+		}
 	}
 	
 	public static void displayStatusMessage(String status){
-		System.out.println("status");
+		if(!(status == null) && !status.equals("")){
+			System.out.println();
+			System.out.println("_______________________________________");
+			System.out.println();
+			System.out.println(status);
+			System.out.println("_______________________________________");
+			System.out.println();
+		}
+	}
+	
+	public static void displayBlock(String block){
+		System.out.println(block);
 	}
 	
 	public static void resetScreen(ArrayList<Item> itemList, String status){

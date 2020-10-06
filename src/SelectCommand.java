@@ -9,18 +9,13 @@ public class SelectCommand implements Command{
 	}
 	
 	public void print(){
-		System.out.println("_______________________________________");
-		System.out.println("Currently Selected");
-		System.out.println(toDoList.getCurrentlySelectedItem());
-		System.out.println("---------------------------------------");
+		String block = "_______________________________________\nCurrently Selected\n" + toDoList.getCurrentlySelectedItem().toString() + "\n---------------------------------------";
+		ScreenManager.displayBlock(block);
 	}
 	
 	public void displayNoItemMessage(){
-		System.out.println("No Items to Select! Exiting Select Mode.");
-	}
-	
-	public void setNoItemStatus(){
-		toDoList.setStatusMessage("No Items to Select! Exiting Select Mode.");
+		ScreenManager.clearScreen();
+		ScreenManager.displayStatusMessage("No Items to Select! Exiting Select Mode.");
 	}
 	
 	public void execute(){
@@ -29,29 +24,25 @@ public class SelectCommand implements Command{
 			SelectItemHandler handler = new SelectItemHandler(toDoList);
 			
 			while(!selection.equals("q") && toDoList.getItemList().size() > 0){
-				toDoList.resetScreen();
+				ScreenManager.resetScreen(toDoList.getItemList(), null);
 				print();
 				
-				selection = toDoList.getScanner().nextLine();
+				selection = Application.getScanner().nextLine();
 				try{
 					Command handleCommand = handler.handle(selection);
 					handleCommand.execute();
 				}catch(NoRuleException e){
-					System.out.println(e);
+					//System.out.println(e);
 				}
 			}
 			
 			if(selection.equals("q")){
-				System.out.println("Exiting Select Mode.");
+				ScreenManager.displayStatusMessage("Exiting Select Mode.");
 			}else if(toDoList.getItemList().size() == 0){
-				toDoList.clearScreen();
-				//toDoList.displayItems();
-				//displayNoItemMessage();
-				setNoItemStatus();
+				displayNoItemMessage();
 			}	
 		}else{
-			toDoList.clearScreen();
-			setNoItemStatus();
+			displayNoItemMessage();
 		}
 	}
 }

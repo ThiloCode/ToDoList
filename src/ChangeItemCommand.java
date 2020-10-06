@@ -7,9 +7,9 @@ public class ChangeItemCommand implements Command{
 	}
 	
 	public void execute(){
-		System.out.println("Change Item Contents");
-		String newContent = toDoList.getScanner().nextLine();
+		ScreenManager.displayStatusMessage("Change Item Contents");
+		String newContent = Application.getScanner().nextLine();
 		toDoList.getCurrentlySelectedItem().modifyContent(newContent);
-		System.out.println("Content Changed");
+		ScreenManager.displayStatusMessage("Content Changed");
 	}
 }

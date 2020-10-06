@@ -1,15 +1,15 @@
 
 public class QuitCommand implements Command
 {
-	private ToDoList toDoList;
+	private Application app;
 	
-	public QuitCommand(ToDoList toDoList){
-		this.toDoList = toDoList;
+	public QuitCommand(Application app){
+		this.app = app;
 	}
 	
 	public void execute(){
-		toDoList.clearScreen();
-		toDoList.close();
-		System.out.println("Bye!");
+		ScreenManager.clearScreen();
+		app.close();
+		ScreenManager.displayStatusMessage("Bye!");
 	}
 }

@@ -7,7 +7,7 @@ public class AchieveItemCommand implements Command{
 	}
 	
 	public void execute(){
-		toDoList.setStatusMessage("Woohoo!");
+		ScreenManager.displayStatusMessage("Woohoo!");
 		toDoList.achieveItem();
 	}
 }

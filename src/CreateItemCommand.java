@@ -9,14 +9,13 @@ public class CreateItemCommand implements Command{
 	}
 	
 	public void execute(){
-		toDoList.clearScreen();
-		toDoList.displayItems();
-		
-		System.out.println("Create New Item");
+		ScreenManager.clearScreen();
+		ScreenManager.displayItems(toDoList.getItemList());
+		ScreenManager.displayStatusMessage("Create New Item");
 
-		String content = toDoList.getScanner().nextLine();
+		String content = Application.getScanner().nextLine();
 		toDoList.addItem(content);
 		
-		toDoList.clearScreen();
+		ScreenManager.clearScreen();
 	}
 }
