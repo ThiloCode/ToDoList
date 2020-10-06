@@ -9,14 +9,15 @@ public class ModifyItemCommand implements Command{
 	public void execute(){
 		String selection = "";
 		if(toDoList.getItemList().size() > 0){
-			ModifyItemHandler handler = new ModifyItemHandler(toDoList);
+			//ModifyItemHandler handler = new ModifyItemHandler(toDoList);
 			
 			ScreenManager.displayStatusMessage("Change Item: " + toDoList.getCurrentlySelectedItem().toString());
-				
-			selection = Application.getScanner().nextLine();
+			String newContent = Application.getScanner().nextLine();
 			
-			Command handleCommand = handler.handle(selection);
-			handleCommand.execute();
+			toDoList.getCurrentlySelectedItem().modifyContent(newContent);
+			
+			//Command handleCommand = handler.handle(selection);
+			//handleCommand.execute();
 		}
 	}
 }
