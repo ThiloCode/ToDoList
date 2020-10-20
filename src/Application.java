@@ -85,8 +85,12 @@ public class Application {
 		
 		toDoList = new ToDoList(itemList);
 		
+		Thread newDayChecker = new NewDayChecker(toDoList);
+		newDayChecker.start();
+		
 		while(!quit){
-			ScreenManager.resetScreen(toDoList.getItemList(), "");
+			//newDayChecker.notify();
+			ScreenManager.resetScreen(toDoList.getItemList(), "", toDoList.generateAchievementStatistics());
 			handleBaseSelection();
 		};
 		

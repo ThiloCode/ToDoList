@@ -24,7 +24,7 @@ public class SelectCommand implements Command{
 			SelectItemHandler handler = new SelectItemHandler(toDoList);
 			
 			while(!selection.equals("q") && toDoList.getItemList().size() > 0){
-				ScreenManager.resetScreen(toDoList.getItemList(), null);
+				ScreenManager.resetScreen(toDoList.getItemList(), null, toDoList.generateAchievementStatistics());
 				print();
 				
 				selection = Application.getScanner().nextLine();

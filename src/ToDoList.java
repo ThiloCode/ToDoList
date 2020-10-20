@@ -6,20 +6,20 @@ import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class ToDoList {
 	
 	private ArrayList<Item> itemList;
 	
-	private int achievedToday = 0;
+	private int achievedToday = 10;
 	private int achievedAllTime = 0;
 	private int tasksCreated = 0;
 	private int currentlySelectedItemIndex = -1;
 	
 	private boolean quit = false;
 	
-	private String statusMessage = "";
+	private LocalDate initializationDate;
 	
 	private ModularIndex index;
 	
@@ -27,6 +27,7 @@ public class ToDoList {
 	
 	public ToDoList(ArrayList<Item> itemList){
 		this.itemList = itemList;
+		initializationDate = LocalDate.now();
 		index = new ModularIndex(itemList.size());
 		updateCurrentlySelectedItem();
 	}
@@ -37,6 +38,10 @@ public class ToDoList {
 	
 	public ModularIndex getIndex(){
 		return index;
+	}
+	
+	public AchievementStatistics generateAchievementStatistics(){
+		return new AchievementStatistics(tasksCreated, achievedToday, achievedAllTime);
 	}
 	
 	public int getCurrentlySelectedItemIndex(){
@@ -56,31 +61,6 @@ public class ToDoList {
 			currentlySelectedItem = null;
 		}else{
 			currentlySelectedItem = itemList.get(index.getValue());
-		}
-	}
-	
-	public void setStatusMessage(String status){
-		statusMessage = status;
-	}
-	
-	public void displayStatusMessage(){
-		if(!statusMessage.equals("")){
-			System.out.println();
-			System.out.println("_______________________________________");
-			System.out.println();
-			System.out.println(statusMessage);
-			System.out.println("_______________________________________");
-			System.out.println();
-			statusMessage = "";
-		}
-	}
-	
-	public void displayItems(){
-		System.out.println("_______________________________________");
-		System.out.println("---------------------------------------");
-		for(int i = 0; i < itemList.size(); i++){
-			System.out.println(itemList.get(i));
-			System.out.println("---------------------------------------");
 		}
 	}
 	
@@ -108,5 +88,9 @@ public class ToDoList {
 		
 		achievedToday++;
 		achievedAllTime++;
+	}
+	
+	public void newDayReset(){
+		achievedToday = 0;
 	}
 }

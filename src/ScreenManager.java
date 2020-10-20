@@ -11,6 +11,13 @@ public class ScreenManager {
 		}
 	}
 	
+	public static void displayStatistics(AchievementStatistics statistics){
+		System.out.println("---------------------------------------");
+		System.out.println("Tasks Created: " + statistics.tasksCreated + "\t Achieved Today: " + statistics.achievedToday + "\t Achieved All-Time: " + statistics.achievedAllTime);
+		System.out.println("---------------------------------------");
+	}
+	
+	
 	public static void displayItems(ArrayList<Item> itemList){
 		System.out.println("_______________________________________");
 		System.out.println("---------------------------------------");
@@ -43,7 +50,12 @@ public class ScreenManager {
 	}
 	
 	public static void resetScreen(ArrayList<Item> itemList, String status){
+		
+	}
+	
+	public static void resetScreen(ArrayList<Item> itemList, String status, AchievementStatistics statistics){
 		clearScreen();
+		displayStatistics(statistics);
 		displayItems(itemList);
 		displayStatusMessage(status);
 	}
