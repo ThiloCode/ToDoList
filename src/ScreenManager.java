@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class ScreenManager {
 	
@@ -27,6 +28,13 @@ public class ScreenManager {
 			System.out.println(status);
 			System.out.println("_______________________________________");
 			System.out.println();
+			
+			//wait briefly to show the status so that the screen cannot be reset before it is seen
+			try {
+				TimeUnit.SECONDS.sleep((long)(1));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

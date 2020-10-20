@@ -6,12 +6,14 @@ import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.time.LocalDateTime;
 
 public class ToDoList {
 	
 	private ArrayList<Item> itemList;
 	
 	private int achievedToday = 0;
+	private int achievedAllTime = 0;
 	private int tasksCreated = 0;
 	private int currentlySelectedItemIndex = -1;
 	
@@ -22,8 +24,6 @@ public class ToDoList {
 	private ModularIndex index;
 	
 	private Item currentlySelectedItem;
-	
-	private Scanner userInput = new Scanner(System.in);
 	
 	public ToDoList(ArrayList<Item> itemList){
 		this.itemList = itemList;
@@ -37,10 +37,6 @@ public class ToDoList {
 	
 	public ModularIndex getIndex(){
 		return index;
-	}
-	
-	public Scanner getScanner(){
-		return userInput;
 	}
 	
 	public int getCurrentlySelectedItemIndex(){
@@ -111,12 +107,6 @@ public class ToDoList {
 		updateCurrentlySelectedItem();
 		
 		achievedToday++;
-	}
-	
-	public void createItem(){			
-		System.out.println("Create New Item");
-
-		String content = userInput.nextLine();
-		addItem(content);
+		achievedAllTime++;
 	}
 }
