@@ -12,7 +12,7 @@ public class ToDoList {
 	
 	private ArrayList<Item> itemList;
 	
-	private int achievedToday = 10;
+	private int achievedToday = 0;
 	private int achievedAllTime = 0;
 	private int tasksCreated = 0;
 	private int currentlySelectedItemIndex = -1;
@@ -25,9 +25,21 @@ public class ToDoList {
 	
 	private Item currentlySelectedItem;
 	
-	public ToDoList(ArrayList<Item> itemList){
+	public ToDoList(ArrayList<Item> itemList, AchievementStatistics statistics, LocalDate initializationDate){
 		this.itemList = itemList;
-		initializationDate = LocalDate.now();
+		
+		achievedToday = statistics.achievedToday;
+		achievedAllTime = statistics.achievedAllTime;
+		tasksCreated = statistics.tasksCreated;
+		
+		
+		if(LocalDate.now().isAfter(initializationDate)){
+			this.initializationDate = LocalDate.now();
+			achievedToday = 0;
+		}else{
+			this.initializationDate = initializationDate;
+		}
+		
 		index = new ModularIndex(itemList.size());
 		updateCurrentlySelectedItem();
 	}
@@ -42,6 +54,10 @@ public class ToDoList {
 	
 	public AchievementStatistics generateAchievementStatistics(){
 		return new AchievementStatistics(tasksCreated, achievedToday, achievedAllTime);
+	}
+	
+	public LocalDate getInitializationDate(){
+		return initializationDate;
 	}
 	
 	public int getCurrentlySelectedItemIndex(){
@@ -81,16 +97,18 @@ public class ToDoList {
 		}
 	}
 	
-	public void achieveItem(){
+	//ensure that only one thread can modify the achievedToday field
+	public synchronized void achieveItem(){
 		itemList.remove(index.getValue());
 		index.removeItem();
 		updateCurrentlySelectedItem();
-		
 		achievedToday++;
 		achievedAllTime++;
 	}
 	
-	public void newDayReset(){
+	//ensure that only one thread can modify the achievedToday field
+	public synchronized void newDayReset(){
 		achievedToday = 0;
+		initializationDate = LocalDate.now();
 	}
 }

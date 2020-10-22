@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -26,22 +27,24 @@ public class Application {
 	public void close(){
 		quit = true;
 		ScreenManager.displayStatusMessage("Saving...");
-		save(toDoList.getItemList());
+		save(toDoList);
 	}
 	
-	public static void save(ArrayList<Item> itemList){
+	public static void save(ToDoList toDoList){
 		try{
 			FileOutputStream outputStream = new FileOutputStream("Data.txt");
 			ObjectOutputStream objectStream = new ObjectOutputStream(outputStream);
 			
-			objectStream.writeObject(itemList);
+			objectStream.writeObject(toDoList.getItemList());
+			objectStream.writeObject(toDoList.generateAchievementStatistics());
+			objectStream.writeObject(toDoList.getInitializationDate());
 			objectStream.close();
 		}catch(IOException e){
 			System.out.println("Saving failed!");
 		}
 	}
 	
-	public ArrayList<Item> load(){
+	public ToDoList load(){
 		try{
 			//if the file exists already then we have to load it
 			//if not we have to create it for saving later
@@ -51,10 +54,12 @@ public class Application {
 				ObjectInputStream objectStream = new ObjectInputStream(inputStream);
 				
 				ArrayList<Item> itemList = (ArrayList<Item>)objectStream.readObject();
+				AchievementStatistics statistics = (AchievementStatistics)objectStream.readObject();
+				LocalDate initializationDate = (LocalDate)objectStream.readObject();
 				
 				objectStream.close();
 				
-				return itemList;
+				return new ToDoList(itemList, statistics, initializationDate);
 			}
 		}catch(IOException e){
 			System.out.println("Error occurred loading!");
@@ -78,7 +83,8 @@ public class Application {
 	}
 	
 	public void start(){
-		ArrayList<Item> itemList = load();
+		toDoList = load();
+		
 		if(itemList == null){
 			itemList = new ArrayList<Item>();
 		}
@@ -94,5 +100,6 @@ public class Application {
 			handleBaseSelection();
 		};
 		
+		newDayChecker.interrupt();
 	}
 }
