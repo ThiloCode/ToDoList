@@ -1,19 +1,18 @@
 package client;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import commands.Command;
 import handlers.BaseSelectionHandler;
 import handlers.NoRuleException;
 
 public class Application {
 	public static void main(String[] args){
+		System.setProperty("javax.net.ssl.trustStore", "ToDoList.keystore");
+				
 		Application app = new Application();
 		app.start();
 	}
@@ -32,6 +31,41 @@ public class Application {
 		quit = true;
 		ScreenManager.displayStatusMessage("Saving...");
 		save(toDoList);
+	}
+	
+	public SSLSocket obtainServerConnection(){
+		SSLSocket clientSocket = null;
+		try {
+			clientSocket = (SSLSocket)SSLSocketFactory.getDefault().createSocket("localhost", 8080);
+		}catch(IOException e) {
+			System.out.println(e);
+			System.out.println("Connection to server failed!");
+		}
+		
+		if(clientSocket != null){
+			return clientSocket;
+		}else{
+			return null;
+		}
+		
+	}
+	
+	public ToDoList download(){
+		try {
+			SSLSocket connection = obtainServerConnection();
+			System.out.print(connection.toString());
+			if(connection != null){
+				PrintWriter output = new PrintWriter(connection.getOutputStream(), true);
+				BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+				
+				output.println("Some text");
+			}
+		}catch (IOException e) {
+			System.out.println(e);
+			System.out.println("Server Connection Failed:");
+		}
+		
+		return null;
 	}
 	
 	public static void save(ToDoList toDoList){
@@ -90,6 +124,7 @@ public class Application {
 	}
 	
 	public void start(){
+		download();
 		toDoList = load();
 		
 		if(toDoList == null){
