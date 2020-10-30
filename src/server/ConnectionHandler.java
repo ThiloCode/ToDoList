@@ -48,12 +48,9 @@ public class ConnectionHandler implements Runnable{
 	
 	public boolean checkSession(BufferedReader in, PrintWriter out){
 		try{
-			String line = in.readLine();
-			System.out.println("SessionID: " + line);
-			int sessionID = Integer.parseInt(line);
-		}catch(NumberFormatException e){
-			System.out.println("Session ID provided was not an integer");
-		} catch (IOException e) {
+			String sessionID = in.readLine();
+			System.out.println("SessionID: " + sessionID);
+		}catch (IOException e) {
 			e.printStackTrace();
 		}
 		return false;
