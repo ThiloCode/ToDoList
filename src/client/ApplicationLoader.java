@@ -33,15 +33,18 @@ public class ApplicationLoader {
 		return objectStream;
 	}
 	
-	public int readSessionID(){
+	public String readSessionID(){
 		ObjectInputStream objectStream = loadFile("session.txt");
 		
-		int sessionID = -1;
+		String sessionID = "";
 		if(objectStream != null){
 			try{
-				sessionID = objectStream.readInt();
+				sessionID = (String)objectStream.readObject();
 			}catch(IOException e){
 				System.out.println("No session found!");
+			} catch (ClassNotFoundException e) {
+				System.out.println("No session found!");
+				System.out.println("String class not found?");
 			}finally{
 				try {
 					objectStream.close();
@@ -53,7 +56,7 @@ public class ApplicationLoader {
 		return sessionID;
 	}
 	
-	public void save(ToDoList toDoList, int sessionID){
+	public void save(ToDoList toDoList, String sessionID){
 		try{
 			FileOutputStream outputStream = new FileOutputStream("Data.txt");
 			ObjectOutputStream objectStream = new ObjectOutputStream(outputStream);
@@ -68,7 +71,7 @@ public class ApplicationLoader {
 			outputStream = new FileOutputStream("session.txt");
 			objectStream = new ObjectOutputStream(outputStream);
 			
-			objectStream.writeInt(sessionID);
+			objectStream.writeObject(sessionID);
 			
 			objectStream.close();
 		}catch(IOException e){

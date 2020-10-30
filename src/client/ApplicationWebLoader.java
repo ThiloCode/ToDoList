@@ -30,7 +30,7 @@ public class ApplicationWebLoader {
 		System.out.println("trying to login!");
 	}
 	
-	public ToDoList download(int sessionID){
+	public ToDoList download(String sessionID){
 		try {
 			SSLSocket connection = obtainServerConnection();
 			connection.startHandshake();
