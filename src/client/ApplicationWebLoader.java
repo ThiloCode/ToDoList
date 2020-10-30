@@ -33,8 +33,9 @@ public class ApplicationWebLoader {
 	public ToDoList download(String sessionID){
 		try {
 			SSLSocket connection = obtainServerConnection();
-			connection.startHandshake();
 			if(connection != null){
+				connection.startHandshake();
+				
 				PrintWriter output = new PrintWriter(connection.getOutputStream(), true);
 				BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 				output.println("SESSION");

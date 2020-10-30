@@ -1,7 +1,15 @@
 package server;
 import java.security.SecureRandom;
-public class SessionGenerator {
+import java.util.concurrent.ConcurrentHashMap;
+import java.time.LocalDate;
+public class SessionManager {
 	private static SecureRandom random = new SecureRandom();
+	
+	private ConcurrentHashMap<String, LocalDate> activeSessions;
+	
+	public SessionManager(){
+		activeSessions = new ConcurrentHashMap<String, LocalDate>();
+	}
 	
 	public static String generateSession(){
 		StringBuilder result = new StringBuilder(64);

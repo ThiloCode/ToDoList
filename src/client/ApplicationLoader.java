@@ -1,4 +1,5 @@
 package client;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -27,8 +28,8 @@ public class ApplicationLoader {
 			}
 		}catch(IOException e){
 			System.out.println("Error occurred while opening crucial files!");
-			System.out.println(e);
-			e.printStackTrace();
+			//System.out.println(e);
+			//e.printStackTrace();
 		}
 		return objectStream;
 	}

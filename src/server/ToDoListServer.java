@@ -29,6 +29,8 @@ import java.util.Arrays;
 public class ToDoListServer{
 	private final int PORT_NUMBER = 8080;
 	
+	public static SessionManager sessionManager;
+	
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException{
 		System.setProperty("javax.net.ssl.keyStore", "C:/Users/Thilo/workspace/To Do List/ToDoList.keystore");
 		System.setProperty("javax.net.ssl.keyStorePassword", "password");
@@ -36,6 +38,10 @@ public class ToDoListServer{
 		ToDoListServer server = new ToDoListServer();
 		server.start();
 	}	
+	
+	public ToDoListServer(){
+		sessionManager = new SessionManager();
+	}
 	
 	public void start() throws IOException, NoSuchAlgorithmException{
 		System.out.println("Listening for connections on port: " + PORT_NUMBER);
