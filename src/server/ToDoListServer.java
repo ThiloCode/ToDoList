@@ -32,7 +32,7 @@ public class ToDoListServer{
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException{
 		System.setProperty("javax.net.ssl.keyStore", "C:/Users/Thilo/workspace/To Do List/ToDoList.keystore");
 		System.setProperty("javax.net.ssl.keyStorePassword", "password");
-
+		
 		ToDoListServer server = new ToDoListServer();
 		server.start();
 	}	
