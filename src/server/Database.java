@@ -1,5 +1,9 @@
 package server;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.time.LocalDate;
 
 import org.bson.Document;
@@ -11,10 +15,33 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 public class Database {
-	private static MongoClient mongoClient = MongoClients.create("mongodb+srv://" +
-	"###USERNAME###" +
-	"###PASSWORD###" + 
-	"@todolisttestcluster.fo3tk.mongodb.net/?retryWrites=true&w=majority&ssl=true");
+	private static MongoClient mongoClient;
+	
+	public static void initialize() throws DatabaseNotFoundException{
+		System.out.println("Setting up database connection...");
+		File config = new File("DatabaseConfiguration.txt");
+		try {
+			if(!config.createNewFile()){
+				FileReader reader = new FileReader(config);
+				BufferedReader input = new BufferedReader(reader);
+				
+				String connectionString = input.readLine();
+				if(connectionString == null){
+					throw new DatabaseNotFoundException("used because it is empty");
+				}else{
+					Database.mongoClient = MongoClients.create(connectionString);
+					System.out.println("Database setup successfully!");
+				}
+			}else{
+				//if the config file was created then that means it wasn't present initially
+				//we don't want an empty config file, so we must remove it
+				config.delete();
+				throw new DatabaseNotFoundException("found");
+			}
+		} catch (IOException e) {
+			throw new DatabaseNotFoundException("read");
+		}
+	}
 	
 	public static void showDBNames(){
 		for(String name : mongoClient.listDatabaseNames()){

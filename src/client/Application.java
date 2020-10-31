@@ -34,9 +34,7 @@ public class Application {
 	public void close(){
 		quit = true;
 		ScreenManager.displayStatusMessage("Saving...");
-		
-		Application.sessionID = "LECFzO0IK4BLTc8BUZi2qFhp0wqH97H3W8X3N85I65vjwvmqfN16FhD9z31GihUC";
-		
+				
 		ApplicationLoader appLoader = new ApplicationLoader();
 		appLoader.save(toDoList, Application.sessionID);
 	}

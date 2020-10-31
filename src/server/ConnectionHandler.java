@@ -37,7 +37,7 @@ public class ConnectionHandler implements Runnable{
 			line.equals(null);
 			if(line.equals("SESSION")){
 				System.out.println("Session Authorization");
-				checkSession(in, out);
+				//checkSession(in, out);
 			}else if(line.equals("LOGIN")){
 				checkLogin(in, out);
 			}

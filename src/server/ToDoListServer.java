@@ -31,10 +31,12 @@ public class ToDoListServer{
 	
 	public static SessionManager sessionManager;
 	
-	public static void main(String[] args) throws IOException, NoSuchAlgorithmException{
+	public static void main(String[] args) throws IOException, NoSuchAlgorithmException, DatabaseNotFoundException{
 		System.setProperty("javax.net.ssl.keyStore", "C:/Users/Thilo/workspace/To Do List/ToDoList.keystore");
 		System.setProperty("javax.net.ssl.keyStorePassword", "password");
 		
+		System.out.println("Starting up server...");
+		Database.initialize();
 		ToDoListServer server = new ToDoListServer();
 		server.start();
 	}	
