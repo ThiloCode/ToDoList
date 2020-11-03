@@ -53,20 +53,42 @@ public class Application {
 		}
 	}
 	
+	public ToDoList chooseMostRecentList(ToDoList local, ToDoList remote){
+		if(local == null && remote == null){
+			return null;
+		}else if(local == null && remote != null){
+			return remote;
+		}else if(local != null && remote == null){
+			return local;
+		}else if(local != null && remote != null){
+			if(local.getInitializationDate().isAfter(remote.getInitializationDate()) || local.getInitializationDate().isEqual(remote.getInitializationDate())){
+				return local;
+			}else if(local.getInitializationDate().isBefore(remote.getInitializationDate())){
+				return remote;
+			}
+		}
+		return null;
+	}
+	
 	public void start(){
 		ApplicationLoader appLoader = new ApplicationLoader();
 		Application.sessionID = appLoader.readSessionID();
+		
+		ToDoList localToDoList = null;
+		ToDoList remoteToDoList = null;
 		
 		ApplicationWebLoader webLoader = new ApplicationWebLoader();
 		if(Application.sessionID == null){
 			webLoader.login();
 		}else{
-			webLoader.download(Application.sessionID);
+			if(webLoader.download(Application.sessionID)){
+				remoteToDoList = webLoader.getDownloadedList();
+			}
 		}
 		
-		Application.sessionID = "LECFzO0IK4BLTc8BUZi2qFhp0wqH97H3W8X3N85I65vjwvmqfN16FhD9z31GihUC";
-		toDoList = appLoader.load();
+		localToDoList = appLoader.load();
 		
+		toDoList = chooseMostRecentList(localToDoList, remoteToDoList);
 		if(toDoList == null){
 			toDoList = new ToDoList();
 		}

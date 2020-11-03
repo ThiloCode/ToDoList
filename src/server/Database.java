@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 import org.bson.Document;
 
@@ -89,6 +90,26 @@ public class Database {
 			return session;
 		}else if(count > 1){
 			throw new DuplicateSessionException(sessionID);
+		}else{
+			return null;
+		}
+	}
+	
+	public static Document getUserToDoList(String userID) throws DuplicateUserException{
+		MongoCollection<Document> toDoLists = getToDoLists();
+		
+		FindIterable<Document> query = toDoLists.find(new Document().append("userID", userID));
+		int count = 0;
+		Document toDoListDoc = null;
+		for(Document doc : query){
+			count++;
+			toDoListDoc = doc;
+		}
+		
+		if(count == 1){
+			return toDoListDoc.get("toDoList", Document.class);
+		}else if(count > 1){
+			throw new DuplicateUserException(userID);
 		}else{
 			return null;
 		}

@@ -7,7 +7,6 @@ import javax.net.ssl.SSLSocket;
 import java.time.LocalDate;
 
 import org.bson.Document;
-import com.mongodb.client.MongoDatabase;
 
 public class ConnectionHandler implements Runnable{
 	private SSLSocket clientSocket;
@@ -23,21 +22,18 @@ public class ConnectionHandler implements Runnable{
 		try{
 			InputStreamReader reader = new InputStreamReader(clientSocket.getInputStream());
 			in = new BufferedReader(reader);
-			
-			out = new PrintWriter(clientSocket.getOutputStream());
-			
-			/*
-			MongoDatabase database = Database.getDatabase();
-			for(String s : database.listCollectionNames()){
-				System.out.println("Thread: " + Thread.currentThread().getId() + " " + s);
-			}
-			*/
+			out = new PrintWriter(clientSocket.getOutputStream(), true);
 			
 			String line = in.readLine();
-			line.equals(null);
 			if(line.equals("SESSION")){
 				System.out.println("Session Authorization");
-				//checkSession(in, out);
+				
+				String userID = checkSession(in, out);
+				if(userID != null){
+					serveToDoList(in, out, userID);
+				}else{
+					
+				}
 			}else if(line.equals("LOGIN")){
 				checkLogin(in, out);
 			}
@@ -45,6 +41,18 @@ public class ConnectionHandler implements Runnable{
 			System.out.println(e);
 		}finally{
 			
+		}
+	}
+	
+	public void serveToDoList(BufferedReader in, PrintWriter out, String userID){
+		try {
+			Document ToDoList = Database.getUserToDoList(userID);
+			out.println("LIST");
+			out.println(ToDoList.toJson());
+			
+			System.out.println("Serving List: " + ToDoList.toJson());
+		} catch (DuplicateUserException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -59,7 +67,7 @@ public class ConnectionHandler implements Runnable{
 		}
 	}
 	
-	public boolean checkSession(BufferedReader in, PrintWriter out){
+	public String checkSession(BufferedReader in, PrintWriter out){
 		String sessionID = null;
 		try{
 			sessionID = in.readLine();
@@ -67,13 +75,13 @@ public class ConnectionHandler implements Runnable{
 			
 			Document session = Database.getSession(sessionID);
 			if(session == null){
-				return false;
+				return null;
 			}else if(checkSessionExpired(session)){
-				return false;
+				return null;
 			}
 			
 			System.out.println("UserID: " + session.getString("userID"));
-			
+			return session.getString("userID");
 			
 		}catch (IOException e) {
 			e.printStackTrace();
@@ -83,7 +91,7 @@ public class ConnectionHandler implements Runnable{
 				Database.deleteDuplicateSessions(sessionID);
 			}
 		}
-		return false;
+		return null;
 	}
 	
 	public boolean checkLogin(BufferedReader in, PrintWriter out){

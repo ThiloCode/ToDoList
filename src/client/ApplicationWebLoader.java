@@ -8,7 +8,11 @@ import java.io.PrintWriter;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.bson.Document;
+
 public class ApplicationWebLoader {
+	private ToDoList downloadedList = null;
+	
 	public SSLSocket obtainServerConnection(){
 		SSLSocket clientSocket = null;
 		try {
@@ -30,22 +34,48 @@ public class ApplicationWebLoader {
 		System.out.println("trying to login!");
 	}
 	
-	public ToDoList download(String sessionID){
+	public boolean download(String sessionID){
+		SSLSocket connection = null;
 		try {
-			SSLSocket connection = obtainServerConnection();
+			connection = obtainServerConnection();
 			if(connection != null){
-				connection.startHandshake();
+				//connection.startHandshake();
 				
 				PrintWriter output = new PrintWriter(connection.getOutputStream(), true);
 				BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+				
 				output.println("SESSION");
 				output.println(sessionID);
+				
+				System.out.println("Getting ToDoList using session...");
+				
+				String JSON = input.readLine();
+				if(JSON.equals("LIST")){
+					JSON = input.readLine();
+					if(JSON != null){
+						System.out.println(JSON);
+						downloadedList = new ToDoList(JSON);
+						return true;
+					}
+				}
 			}
 		}catch (IOException e) {
 			System.out.println(e);
 			System.out.println("Server Connection Failed! Loading from file...");
+		}finally{
+			if(connection != null){
+				try {
+					connection.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.out.println("Unable to close connection with the server!");
+				}
+			}
 		}
-		
-		return null;
+		return false;
+	}
+	
+	public ToDoList getDownloadedList(){
+		return downloadedList;
 	}
 }

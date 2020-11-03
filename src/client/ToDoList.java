@@ -2,6 +2,8 @@ package client;
 import java.util.ArrayList;
 import java.time.LocalDate;
 
+import org.bson.Document;
+
 public class ToDoList {
 	
 	private ArrayList<Item> itemList;
@@ -10,8 +12,6 @@ public class ToDoList {
 	private int achievedAllTime = 0;
 	private int tasksCreated = 0;
 	private int currentlySelectedItemIndex = -1;
-	
-	private boolean quit = false;
 	
 	private LocalDate initializationDate;
 	
@@ -33,6 +33,25 @@ public class ToDoList {
 		}else{
 			this.initializationDate = initializationDate;
 		}
+		
+		index = new ModularIndex(itemList.size());
+		updateCurrentlySelectedItem();
+	}
+	
+	public ToDoList(String JSON){
+		Document toDoListDocument = Document.parse(JSON);
+		
+		initializationDate = LocalDate.of(toDoListDocument.getInteger("year"), toDoListDocument.getInteger("month"), toDoListDocument.getInteger("day"));
+		
+		itemList = new ArrayList<Item>();
+		ArrayList<String> itemContents = (ArrayList<String>)toDoListDocument.getList("list", String.class);
+		for(String itemContent : itemContents){
+			itemList.add(new Item(itemContent));
+		}
+		
+		achievedToday = toDoListDocument.getInteger("achievedToday");
+		achievedAllTime = toDoListDocument.getInteger("achievedAllTime");
+		tasksCreated = toDoListDocument.getInteger("tasksCreated");
 		
 		index = new ModularIndex(itemList.size());
 		updateCurrentlySelectedItem();
@@ -117,5 +136,21 @@ public class ToDoList {
 	public synchronized void newDayReset(){
 		achievedToday = 0;
 		initializationDate = LocalDate.now();
+	}
+	
+	public Document convertToDocument(){
+		ArrayList<String> itemContents = new ArrayList<String>();
+		for(Item item : itemList){
+			itemContents.add(item.toString());
+		}
+		
+		Document toDoListDocument = new Document();
+		
+		toDoListDocument.append("list", itemContents);
+		toDoListDocument.append("achievedToday", achievedToday);
+		toDoListDocument.append("achievedAllTime", achievedAllTime);
+		toDoListDocument.append("tasksCreated", tasksCreated);
+		
+		return toDoListDocument;
 	}
 }
