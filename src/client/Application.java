@@ -61,9 +61,9 @@ public class Application {
 		}else if(local != null && remote == null){
 			return local;
 		}else if(local != null && remote != null){
-			if(local.getInitializationDate().isAfter(remote.getInitializationDate()) || local.getInitializationDate().isEqual(remote.getInitializationDate())){
+			if(local.getInitializationDateTime().isAfter(remote.getInitializationDateTime()) || local.getInitializationDateTime().isEqual(remote.getInitializationDateTime())){
 				return local;
-			}else if(local.getInitializationDate().isBefore(remote.getInitializationDate())){
+			}else if(local.getInitializationDateTime().isBefore(remote.getInitializationDateTime())){
 				return remote;
 			}
 		}

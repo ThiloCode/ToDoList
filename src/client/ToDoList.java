@@ -1,6 +1,8 @@
 package client;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 import org.bson.Document;
 
@@ -13,25 +15,25 @@ public class ToDoList {
 	private int tasksCreated = 0;
 	private int currentlySelectedItemIndex = -1;
 	
-	private LocalDate initializationDate;
+	private LocalDateTime initializationDateTime;
 	
 	private ModularIndex index;
 	
 	private Item currentlySelectedItem;
 	
-	public ToDoList(ArrayList<Item> itemList, AchievementStatistics statistics, LocalDate initializationDate){
+	public ToDoList(ArrayList<Item> itemList, AchievementStatistics statistics, LocalDateTime initializationDateTime){
 		this.itemList = itemList;
 		
 		achievedToday = statistics.achievedToday;
 		achievedAllTime = statistics.achievedAllTime;
 		tasksCreated = statistics.tasksCreated;
 		
-		
-		if(LocalDate.now().isAfter(initializationDate)){
-			this.initializationDate = LocalDate.now();
+		//just have to see if it is still the same day
+		if(LocalDateTime.now().toLocalDate().isAfter(initializationDateTime.toLocalDate())){
+			this.initializationDateTime = LocalDateTime.now();
 			achievedToday = 0;
 		}else{
-			this.initializationDate = initializationDate;
+			this.initializationDateTime = initializationDateTime;
 		}
 		
 		index = new ModularIndex(itemList.size());
@@ -41,7 +43,9 @@ public class ToDoList {
 	public ToDoList(String JSON){
 		Document toDoListDocument = Document.parse(JSON);
 		
-		initializationDate = LocalDate.of(toDoListDocument.getInteger("year"), toDoListDocument.getInteger("month"), toDoListDocument.getInteger("day"));
+		initializationDateTime = LocalDateTime.of(LocalDate.of(toDoListDocument.getInteger("year"), toDoListDocument.getInteger("month"), toDoListDocument.getInteger("day")),
+											  LocalTime.of(toDoListDocument.getInteger("hour"), toDoListDocument.getInteger("minute"), toDoListDocument.getInteger("second"))
+											 );
 		
 		itemList = new ArrayList<Item>();
 		ArrayList<String> itemContents = (ArrayList<String>)toDoListDocument.getList("list", String.class);
@@ -64,7 +68,7 @@ public class ToDoList {
 		achievedAllTime = 0;
 		tasksCreated = 0;
 		
-		initializationDate = LocalDate.now();
+		initializationDateTime = LocalDateTime.now();
 		
 		index = new ModularIndex(itemList.size());
 		updateCurrentlySelectedItem();
@@ -82,8 +86,8 @@ public class ToDoList {
 		return new AchievementStatistics(tasksCreated, achievedToday, achievedAllTime);
 	}
 	
-	public LocalDate getInitializationDate(){
-		return initializationDate;
+	public LocalDateTime getInitializationDateTime(){
+		return initializationDateTime;
 	}
 	
 	public int getCurrentlySelectedItemIndex(){
@@ -135,7 +139,7 @@ public class ToDoList {
 	//ensure that only one thread can modify the achievedToday field
 	public synchronized void newDayReset(){
 		achievedToday = 0;
-		initializationDate = LocalDate.now();
+		initializationDateTime = LocalDateTime.now();
 	}
 	
 	public Document convertToDocument(){

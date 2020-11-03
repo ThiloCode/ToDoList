@@ -6,7 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import client.AchievementStatistics;
@@ -64,7 +64,7 @@ public class ApplicationLoader {
 			
 			objectStream.writeObject(toDoList.getItemList());
 			objectStream.writeObject(toDoList.generateAchievementStatistics());
-			objectStream.writeObject(toDoList.getInitializationDate());
+			objectStream.writeObject(toDoList.getInitializationDateTime());
 			
 			objectStream.close();
 			
@@ -86,7 +86,7 @@ public class ApplicationLoader {
 			try{
 				ArrayList<Item> itemList = ((ArrayList<Item>)objectStream.readObject());
 				AchievementStatistics statistics = (AchievementStatistics)objectStream.readObject();
-				LocalDate initializationDate = (LocalDate)objectStream.readObject();
+				LocalDateTime initializationDate = (LocalDateTime)objectStream.readObject();
 				
 				return new ToDoList(itemList, statistics, initializationDate);
 			}catch(IOException e){
