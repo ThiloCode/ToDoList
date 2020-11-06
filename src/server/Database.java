@@ -54,6 +54,11 @@ public class Database {
 		return mongoClient.getDatabase("ToDoLists");
 	}
 	
+	private static MongoCollection<Document> getUsers(){
+		MongoDatabase db = getDatabase();
+		return db.getCollection("Users");
+	}
+	
 	private static MongoCollection<Document> getSessions(){
 		MongoDatabase db = getDatabase();
 		return db.getCollection("Sessions");
@@ -90,6 +95,26 @@ public class Database {
 			return session;
 		}else if(count > 1){
 			throw new DuplicateSessionException(sessionID);
+		}else{
+			return null;
+		}
+	}
+	
+	public static Document getUserAccount(String userID) throws DuplicateUserException{
+		MongoCollection<Document> users = getUsers();
+		
+		FindIterable<Document> query = users.find(new Document().append("userID", userID));
+		int count = 0;
+		Document userAccount = null;
+		for(Document doc : query){
+			count++;
+			userAccount = doc;
+		}
+		
+		if(count == 1){
+			return userAccount;
+		}else if(count > 1){
+			throw new DuplicateUserException(userID);
 		}else{
 			return null;
 		}

@@ -79,7 +79,11 @@ public class Application {
 		
 		ApplicationWebLoader webLoader = new ApplicationWebLoader();
 		if(Application.sessionID == null){
-			webLoader.login();
+			try {
+				webLoader.login();
+			} catch (NoConsoleException e) {
+				e.printStackTrace();
+			}
 		}else{
 			if(webLoader.download(Application.sessionID)){
 				remoteToDoList = webLoader.getDownloadedList();
