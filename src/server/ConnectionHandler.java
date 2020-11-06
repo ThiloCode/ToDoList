@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import org.bson.Document;
 
 import client.InvalidCommunicationException;
+import cryptographyTools.Hasher;
 
 public class ConnectionHandler implements Runnable{
 	private SSLSocket clientSocket;
@@ -113,38 +114,6 @@ public class ConnectionHandler implements Runnable{
 		}
 	}
 	
-	public String convertBytesToHexadecimal(byte[] bytes){
-		StringBuilder builder = new StringBuilder();
-		for(int i = 0; i < bytes.length; i++){
-			//bytes are in twos compliment, but we need 1111 1111 = 0xFF, however 1111 1111 = -1 in twos compliment
-			String hex = Integer.toHexString(Byte.toUnsignedInt(bytes[i]));
-			if(hex.length() == 1){
-				hex = "0" + hex;
-			}
-			builder.append(hex);
-		}
-		
-		return builder.toString();
-	}
-	
-	public String constructHashedPassword(String userSalt, String hashedPassword) throws NoSuchAlgorithmException{
-		MessageDigest hashAlg = MessageDigest.getInstance("SHA-256");
-		
-		byte[] hashedPassword = hashAlg.digest(password.getBytes());
-		
-		String hashedPasswordHex = convertBytesToHexadecimal(hashedPassword);
-			   hashedPasswordHex = hashedPasswordHex + userSalt;
-		
-		hashedPassword = new byte[hashedPasswordHex.length()];
-		for(int i = 0; i < hashedPasswordHex.length() - 2; i++){
-			//max unsigned byte value = 0xFF, need to parse two characters at a time
-			hashedPassword[i] = (byte)Integer.parseInt(hashedPasswordHex.substring(i, i + 2), 16);
-		}
-		
-		hashedPasswordHex = convertBytesToHexadecimal(hashedPassword);
-		return hashedPasswordHex;
-	}
-	
 	public boolean checkLogin(BufferedReader in, PrintWriter out){
 		String userID = null;
 		try{
@@ -158,6 +127,7 @@ public class ConnectionHandler implements Runnable{
 			}else{
 				out.println("VALID");
 			}
+			
 			String hashedPassword = userAccount.getString("hashedPassword");
 			String savedSalt = userAccount.getString("salt");
 			if(hashedPassword == null || savedSalt == null){
@@ -166,16 +136,17 @@ public class ConnectionHandler implements Runnable{
 			
 			out.println(savedSalt);
 			
-			String randomSalt = receiveMessage(in);
-			System.out.println("Salt used by user: " + randomSalt);
+			String clientSalt = receiveMessage(in);
+			System.out.println("Salt used by user: " + clientSalt);
 			
-			try {
-				MessageDigest hashAlg = MessageDigest.getInstance("SHA-256");
-				byte[] hash = hashAlg.digest((hashedPassword + randomSalt).getBytes());
-				
-			}catch(NoSuchAlgorithmException e) {
-				e.printStackTrace();
-				System.out.println("Cannot authenticate logins as hashing algorithm is missing!");
+			String resultPassword = Hasher.sha256HashHex(hashedPassword + clientSalt);
+			String clientPassword = receiveMessage(in);
+			if(resultPassword.equals(clientPassword)){
+				out.println("VALID");
+				return true;
+			}else{
+				out.println("FAIL");
+				return false;
 			}
 		}catch(IOException e) {
 			e.printStackTrace();
@@ -186,6 +157,10 @@ public class ConnectionHandler implements Runnable{
 			}
 		}catch(InvalidCommunicationException e){
 			System.out.println(e);
+		}catch(NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			System.out.println("Cannot authenticate logins as hashing algorithm is missing!");
+			return false;
 		}
 		return false;
 	}

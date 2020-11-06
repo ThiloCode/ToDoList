@@ -15,6 +15,8 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.bson.Document;
 
+import cryptographyTools.Hasher;
+
 public class ApplicationWebLoader {
 	private ToDoList downloadedList = null;
 	
@@ -35,20 +37,6 @@ public class ApplicationWebLoader {
 		
 	}
 	
-	public String convertBytesToHexadecimal(byte[] bytes){
-		StringBuilder builder = new StringBuilder();
-		for(int i = 0; i < bytes.length; i++){
-			//bytes are in twos compliment, but we need 1111 1111 = 0xFF, however 1111 1111 = -1 in twos compliment
-			String hex = Integer.toHexString(Byte.toUnsignedInt(bytes[i]));
-			if(hex.length() == 1){
-				hex = "0" + hex;
-			}
-			builder.append(hex);
-		}
-		
-		return builder.toString();
-	}
-	
 	public String getUserName(Console console){
 		System.out.print("Username: ");
 		String userName = console.readLine();
@@ -61,6 +49,26 @@ public class ApplicationWebLoader {
 		String password = new String(console.readPassword());
 		System.out.println();
 		return password;
+	}
+	
+	public boolean checkSuccess(BufferedReader input){
+		String success;
+		try {
+			success = receiveMessage(input);
+			if(success.equals("VALID")){
+				return true;
+			}else if(success.equals("FAIL")){
+				return false;
+			}else{
+				throw new InvalidCommunicationException(success, "VALID/FAIL");
+			}
+		}catch (IOException e) {
+			e.printStackTrace();
+		} catch (InvalidCommunicationException e) {
+			e.printStackTrace();
+			System.out.println("Server Error, try another time.");
+		}
+		return false;
 	}
 	
 	public boolean checkValidUserName(BufferedReader input){
@@ -106,24 +114,6 @@ public class ApplicationWebLoader {
 		}
 	}
 	
-	public String constructHashedPassword(String userSalt, String serverSalt, String password) throws NoSuchAlgorithmException{
-		MessageDigest hashAlg = MessageDigest.getInstance("SHA-256");
-		
-		byte[] hashedPassword = hashAlg.digest((password + serverSalt).getBytes());
-		
-		String hashedPasswordHex = convertBytesToHexadecimal(hashedPassword);
-			   hashedPasswordHex = hashedPasswordHex + userSalt;
-		
-		hashedPassword = new byte[hashedPasswordHex.length()];
-		for(int i = 0; i < hashedPasswordHex.length() - 2; i++){
-			//max unsigned byte value = 0xFF, need to parse two characters at a time
-			hashedPassword[i] = (byte)Integer.parseInt(hashedPasswordHex.substring(i, i + 2), 16);
-		}
-		
-		hashedPasswordHex = convertBytesToHexadecimal(hashedPassword);
-		return hashedPasswordHex;
-	}
-	
 	public boolean login() throws NoConsoleException{
 		System.out.println("trying to login!");
 		
@@ -147,41 +137,38 @@ public class ApplicationWebLoader {
 			String userName = getUserName(console);
 			output.println(userName);
 			
-			if(!checkValidUserName(input)){
+			if(!checkSuccess(input)){
 				System.out.println("Invalid Username");
 				return false;
 			}
 			
-			String serverSalt;
-			try{
-				serverSalt = receiveSalt(input);
-			}catch(InvalidCommunicationException e){
-				e.printStackTrace();
-				System.out.println("Server Error: try another time.");
-				return false;
-			}catch(IOException e){
-				e.printStackTrace();
-				System.out.println("Server Error: try another time.");
-				return false;
-			}
-			
+			String serverSalt = receiveSalt(input);
 			String userSalt = sendSalt(output);
-			
 			String password = getPassword(console);
-			try{
-				password = constructHashedPassword(userSalt, serverSalt, password);
-			}catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-				System.out.println("Cannot connect as hashing algorithm is not implemented!");
-			}
+			String hashedPassword = Hasher.sha256HashHex(password + serverSalt);
+				   hashedPassword=  Hasher.sha256HashHex(hashedPassword + userSalt);
 			output.println(password);
+			
+			if(!checkSuccess(input)){
+				System.out.println("Incorrect Password");
+				return false;
+			}
 			
 			return true;
 			
 		}catch (IOException e) {
 			System.out.println(e);
 			System.out.println("Server Connection Failed! Loading from file...");
-		}finally{
+		}catch(InvalidCommunicationException e){
+			e.printStackTrace();
+			System.out.println("Server Error: try another time.");
+			return false;
+		}catch(NoSuchAlgorithmException e){
+			e.printStackTrace();
+			System.out.println("Cannot connect as hashing algorithm is not implemented!");
+			return false;
+		}
+		finally{
 			if(connection != null){
 				try {
 					connection.close();
