@@ -12,6 +12,7 @@ import org.bson.Document;
 
 import client.InvalidCommunicationException;
 import cryptographyTools.Hasher;
+import cryptographyTools.StringGenerator;
 
 public class ConnectionHandler implements Runnable{
 	private SSLSocket clientSocket;
@@ -33,17 +34,19 @@ public class ConnectionHandler implements Runnable{
 			if(line.equals("SESSION")){
 				System.out.println("Session Authorization");
 				
-				String userID = checkSession(in, out);
-				if(userID != null){
-					serveToDoList(in, out, userID);
+				Session userSession = checkSession(in, out);
+				if(userSession.isValid()){
+					serveToDoList(in, out, userSession.getUserID());
 				}else{
-					
+					System.out.println("Session Invalid!");
 				}
 			}else if(line.equals("LOGIN")){
 				System.out.println("Logging in with username and password");
 				
-				if(checkLogin(in, out)){
-					
+				Session userSession = checkLogin(in, out);
+				if(userSession.isValid()){
+					out.println("VALID");
+					serveToDoList(in, out, userSession.getUserID());
 				}else{
 					out.println("FAIL");
 				}
@@ -78,7 +81,7 @@ public class ConnectionHandler implements Runnable{
 		}
 	}
 	
-	public String checkSession(BufferedReader in, PrintWriter out){
+	public Session checkSession(BufferedReader in, PrintWriter out){
 		String sessionID = null;
 		try{
 			sessionID = in.readLine();
@@ -86,13 +89,15 @@ public class ConnectionHandler implements Runnable{
 			
 			Document session = Database.getSession(sessionID);
 			if(session == null){
-				return null;
+				return Session.buildInvalidSession();
 			}else if(checkSessionExpired(session)){
-				return null;
+				return Session.buildInvalidSession();
 			}
 			
 			System.out.println("UserID: " + session.getString("userID"));
-			return session.getString("userID");
+			
+			Session userSession = new Session(session.getString("userID"), sessionID);
+			return userSession;
 			
 		}catch (IOException e) {
 			e.printStackTrace();
@@ -102,7 +107,8 @@ public class ConnectionHandler implements Runnable{
 				Database.deleteDuplicateSessions(sessionID);
 			}
 		}
-		return null;
+		return Session.buildInvalidSession();
+		
 	}
 	
 	public String receiveMessage(BufferedReader input) throws IOException, InvalidCommunicationException{
@@ -114,7 +120,7 @@ public class ConnectionHandler implements Runnable{
 		}
 	}
 	
-	public boolean checkLogin(BufferedReader in, PrintWriter out){
+	public Session checkLogin(BufferedReader in, PrintWriter out){
 		String userID = null;
 		try{
 			userID = receiveMessage(in);
@@ -123,7 +129,7 @@ public class ConnectionHandler implements Runnable{
 			Document userAccount = Database.getUserAccount(userID);
 			if(userAccount == null){
 				out.println("FAIL");
-				return false;
+				return Session.buildInvalidSession();
 			}else{
 				out.println("VALID");
 			}
@@ -131,7 +137,7 @@ public class ConnectionHandler implements Runnable{
 			String hashedPassword = userAccount.getString("hashedPassword");
 			String savedSalt = userAccount.getString("salt");
 			if(hashedPassword == null || savedSalt == null){
-				return false;
+				return Session.buildInvalidSession();
 			}
 			
 			out.println(savedSalt);
@@ -141,12 +147,13 @@ public class ConnectionHandler implements Runnable{
 			
 			String resultPassword = Hasher.sha256HashHex(hashedPassword + clientSalt);
 			String clientPassword = receiveMessage(in);
+			System.out.println("Client Password: " + clientPassword);
+			System.out.println("Generated Password: " + resultPassword);
 			if(resultPassword.equals(clientPassword)){
-				out.println("VALID");
-				return true;
+				Session userSession = new Session(userID, StringGenerator.generateRandomAlphanumericString(64));
+				return userSession;
 			}else{
-				out.println("FAIL");
-				return false;
+				return Session.buildInvalidSession();
 			}
 		}catch(IOException e) {
 			e.printStackTrace();
@@ -160,8 +167,7 @@ public class ConnectionHandler implements Runnable{
 		}catch(NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			System.out.println("Cannot authenticate logins as hashing algorithm is missing!");
-			return false;
 		}
-		return false;
+		return Session.buildInvalidSession();
 	}
 }

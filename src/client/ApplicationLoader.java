@@ -37,7 +37,7 @@ public class ApplicationLoader {
 	public String readSessionID(){
 		ObjectInputStream objectStream = loadFile("session.txt");
 		
-		String sessionID = "";
+		String sessionID = null;
 		if(objectStream != null){
 			try{
 				sessionID = (String)objectStream.readObject();

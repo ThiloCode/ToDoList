@@ -1,20 +1,33 @@
-package client;
+package test;
 
 import java.io.BufferedReader;
+import java.io.Console;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Console;
-
 import java.security.NoSuchAlgorithmException;
 
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-import cryptographyTools.*;
+import client.InvalidCommunicationException;
+import client.NoConsoleException;
+import client.ToDoList;
+import cryptographyTools.Hasher;
+import cryptographyTools.StringGenerator;
 
-public class ApplicationWebLoader {
-	private ToDoList downloadedList = null;
+public class LoginTest {
+private ToDoList downloadedList = null;
+
+	public static void main(String[] args){
+		System.setProperty("javax.net.ssl.trustStore", "ToDoList.truststore");
+		System.setProperty("javax.net.ssl.trustStorePassword", "password");
+		
+		LoginTest test = new LoginTest();
+		if(test.login()){
+			System.out.println("Login Success!");
+		}
+	}
 	
 	public SSLSocket obtainServerConnection(){
 		SSLSocket clientSocket = null;
@@ -31,20 +44,6 @@ public class ApplicationWebLoader {
 			return null;
 		}
 		
-	}
-	
-	public String getUserName(Console console){
-		System.out.print("Username: ");
-		String userName = console.readLine();
-		System.out.println();
-		return userName;
-	}
-	
-	public String getPassword(Console console){
-		System.out.print("Password: ");
-		String password = new String(console.readPassword());
-		System.out.println();
-		return password;
 	}
 	
 	public boolean checkSuccess(BufferedReader input){
@@ -110,8 +109,10 @@ public class ApplicationWebLoader {
 		}
 	}
 	
-	public boolean login() throws NoConsoleException{
-		System.out.println("trying to login!");
+	public boolean login(){
+		String userName = "1";
+		String password = "password";
+		System.out.println("trying to login! Using username: " + userName + " password: " + password);
 		
 		SSLSocket connection = null;
 		try {
@@ -123,14 +124,9 @@ public class ApplicationWebLoader {
 			PrintWriter output = new PrintWriter(connection.getOutputStream(), true);
 			BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			
-			Console console = System.console();
-			if(console == null){
-				throw new NoConsoleException();
-			}
-			
 			output.println("LOGIN");
 			
-			String userName = getUserName(console);
+			
 			output.println(userName);
 			
 			if(!checkSuccess(input)){
@@ -139,11 +135,12 @@ public class ApplicationWebLoader {
 			}
 			
 			String serverSalt = receiveSalt(input);
+			System.out.println("Server Salt: " + serverSalt);
 			String userSalt = sendSalt(output);
-			String password = getPassword(console);
 			String hashedPassword = Hasher.sha256HashHex(password + serverSalt);
-				   hashedPassword = Hasher.sha256HashHex(hashedPassword + userSalt);
+				   hashedPassword=  Hasher.sha256HashHex(hashedPassword + userSalt);
 			output.println(hashedPassword);
+			System.out.println("Password Generated: " + password);
 			
 			if(!checkSuccess(input)){
 				System.out.println("Incorrect Password");
