@@ -139,4 +139,20 @@ public class Database {
 			return null;
 		}
 	}
+	
+	public static void addNewUserSession(Session userSession) throws DuplicateSessionException{
+		Document session = getSession(userSession.getSessionID());
+		if(session != null){
+			throw new DuplicateSessionException(userSession.getSessionID());
+		}else{
+			MongoCollection<Document> sessions = getSessions();
+			Document sessionDocument = new Document();
+					 sessionDocument.append("sessionID", userSession.getSessionID());
+					 sessionDocument.append("userID", userSession.getUserID());
+					 sessionDocument.append("day", LocalDate.now().getDayOfMonth());
+					 sessionDocument.append("month", LocalDate.now().getMonthValue());
+					 sessionDocument.append("year", LocalDate.now().getYear());
+			sessions.insertOne(sessionDocument);
+		}
+	}
 }
