@@ -70,13 +70,7 @@ public class Application {
 		return null;
 	}
 	
-	public void start(){
-		ApplicationLoader appLoader = new ApplicationLoader();
-		Application.sessionID = appLoader.readSessionID();
-		
-		ToDoList localToDoList = null;
-		ToDoList remoteToDoList = null;
-		
+	public ToDoList getRemoteToDoList(String sessionID){
 		ApplicationWebLoader webLoader = new ApplicationWebLoader();
 		if(Application.sessionID.equals("")){
 			try {
@@ -88,7 +82,16 @@ public class Application {
 			webLoader.loginWithSession(Application.sessionID);
 		}
 		
-		localToDoList = appLoader.load();
+		return webLoader.getDownloadedList();
+	}
+	
+	public void start(){
+		ApplicationLoader appLoader = new ApplicationLoader();
+		Application.sessionID = appLoader.readSessionID();
+		
+		ToDoList localToDoList = appLoader.load();
+		ToDoList remoteToDoList = getRemoteToDoList(sessionID);
+		 
 		
 		toDoList = chooseMostRecentList(localToDoList, remoteToDoList);
 		if(toDoList == null){

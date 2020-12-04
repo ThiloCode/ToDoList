@@ -33,7 +33,7 @@ public class ApplicationWebLoader {
 	}
 	
 	public String getUserName(Console console){
-		ScreenManager.displayInlinePrompt("Username: ");;
+		ScreenManager.displayInlinePrompt("Username: ");
 		String userName = console.readLine();
 		System.out.println();
 		return userName;
@@ -98,6 +98,35 @@ public class ApplicationWebLoader {
 		return salt;
 	}
 	
+	public String getHashedPassword(Console console, BufferedReader input, PrintWriter output) throws IOException, InvalidCommunicationException, NoSuchAlgorithmException{
+		String serverSalt = receiveSalt(input);
+		String userSalt = sendSalt(output);
+		String password = getPassword(console);
+		String hashedPassword = Hasher.sha256HashHex(password + serverSalt);
+			   hashedPassword = Hasher.sha256HashHex(hashedPassword + userSalt);
+		return hashedPassword;
+	}
+	
+	public boolean authenticateUsernameAndPassword(Console console, BufferedReader input, PrintWriter output) throws NoSuchAlgorithmException, IOException, InvalidCommunicationException{
+		String userName = getUserName(console);
+		output.println(userName);
+		
+		if(!checkSuccess(input)){
+			ScreenManager.displayStatusMessage("Invalid Username");
+			return false;
+		}
+		
+		String hashedPassword = getHashedPassword(console, input, output);
+		output.println(hashedPassword);
+		
+		if(!checkSuccess(input)){
+			ScreenManager.displayStatusMessage("Incorrect Password");
+			return false;
+		}
+		
+		return true;
+	}
+	
 	public String receiveMessage(BufferedReader input) throws IOException, InvalidCommunicationException{
 		String received = input.readLine();
 		if(received == null){
@@ -138,31 +167,15 @@ public class ApplicationWebLoader {
 			
 			output.println("LOGIN");
 			
-			String userName = getUserName(console);
-			output.println(userName);
-			
-			if(!checkSuccess(input)){
-				ScreenManager.displayStatusMessage("Invalid Username");
-				return "";
-			}
-			
-			String serverSalt = receiveSalt(input);
-			String userSalt = sendSalt(output);
-			String password = getPassword(console);
-			String hashedPassword = Hasher.sha256HashHex(password + serverSalt);
-				   hashedPassword = Hasher.sha256HashHex(hashedPassword + userSalt);
-			output.println(hashedPassword);
-			
-			if(!checkSuccess(input)){
-				ScreenManager.displayStatusMessage("Incorrect Password");
+			if(!authenticateUsernameAndPassword(console, input, output)){
 				return "";
 			}
 			
 			String sessionID = receiveMessage(input);
+			
 			receiveToDoList(input);
 			
 			return sessionID;
-			
 		}catch (IOException e) {
 			System.out.println(e);
 			System.out.println("Server Connection Failed! Loading from file...");
@@ -190,17 +203,18 @@ public class ApplicationWebLoader {
 		SSLSocket connection = null;
 		try {
 			connection = obtainServerConnection();
-			if(connection != null){
-				PrintWriter output = new PrintWriter(connection.getOutputStream(), true);
-				BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-				
-				output.println("SESSION");
-				output.println(sessionID);
-				
-				String JSON = input.readLine();
-				receiveToDoList(input);
-				return true;
+			if(connection == null){
+				return false;
 			}
+			
+			PrintWriter output = new PrintWriter(connection.getOutputStream(), true);
+			BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+			
+			output.println("SESSION");
+			output.println(sessionID);
+			
+			receiveToDoList(input);
+			return true;
 		}catch (IOException e) {
 			System.out.println(e);
 			System.out.println("Server Connection Failed! Loading from file...");
