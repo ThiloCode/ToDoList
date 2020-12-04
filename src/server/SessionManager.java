@@ -7,4 +7,12 @@ public class SessionManager {
 	public SessionManager(){
 		activeSessions = new ConcurrentHashMap<String, LocalDate>();
 	}
+	
+	public void addNewSession(Session userSession) throws DuplicateSessionException{
+		if(activeSessions.containsKey(userSession.getSessionID())){
+			throw new DuplicateSessionException(userSession.getSessionID());
+		}else{
+			Database.addNewUserSession(userSession);
+		}
+	}
 }

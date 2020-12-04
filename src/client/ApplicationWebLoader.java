@@ -21,8 +21,7 @@ public class ApplicationWebLoader {
 		try {
 			clientSocket = (SSLSocket)SSLSocketFactory.getDefault().createSocket("localhost", 8080);
 		}catch(IOException e) {
-			System.out.println(e);
-			System.out.println("Connection to server failed!");
+			ScreenManager.displayStatusMessage("Connection to server failed!");
 		}
 		
 		if(clientSocket != null){
@@ -34,14 +33,14 @@ public class ApplicationWebLoader {
 	}
 	
 	public String getUserName(Console console){
-		System.out.print("Username: ");
+		ScreenManager.displayInlinePrompt("Username: ");;
 		String userName = console.readLine();
 		System.out.println();
 		return userName;
 	}
 	
 	public String getPassword(Console console){
-		System.out.print("Password: ");
+		ScreenManager.displayInlinePrompt("Password: ");
 		String password = new String(console.readPassword());
 		System.out.println();
 		return password;
@@ -89,7 +88,6 @@ public class ApplicationWebLoader {
 	
 	public String sendSalt(PrintWriter output){
 		String mySalt = StringGenerator.generateRandomAlphanumericString(64);
-		System.out.println("Salt Generated: " + mySalt);
 		output.println(mySalt);
 		
 		return mySalt;
@@ -97,7 +95,6 @@ public class ApplicationWebLoader {
 	
 	public String receiveSalt(BufferedReader input) throws IOException, InvalidCommunicationException{
 		String salt = receiveMessage(input);
-		System.out.println("Salt Received: " + salt);
 		return salt;
 	}
 	
@@ -110,14 +107,25 @@ public class ApplicationWebLoader {
 		}
 	}
 	
-	public boolean login() throws NoConsoleException{
-		System.out.println("trying to login!");
-		
+	public void receiveToDoList(BufferedReader input) throws IOException, InvalidCommunicationException{
+		String JSON = input.readLine();
+		if(JSON.equals("LIST")){
+			JSON = input.readLine();
+			if(JSON != null){
+				System.out.println(JSON);
+				downloadedList = new ToDoList(JSON);
+			}
+		}else{
+			throw new InvalidCommunicationException(JSON, "LIST");
+		}
+	}
+	
+	public String loginWithUsernameAndPassword() throws NoConsoleException{
 		SSLSocket connection = null;
 		try {
 			connection = obtainServerConnection();
 			if(connection == null){
-				return false;
+				return "";
 			}
 					
 			PrintWriter output = new PrintWriter(connection.getOutputStream(), true);
@@ -134,8 +142,8 @@ public class ApplicationWebLoader {
 			output.println(userName);
 			
 			if(!checkSuccess(input)){
-				System.out.println("Invalid Username");
-				return false;
+				ScreenManager.displayStatusMessage("Invalid Username");
+				return "";
 			}
 			
 			String serverSalt = receiveSalt(input);
@@ -146,11 +154,14 @@ public class ApplicationWebLoader {
 			output.println(hashedPassword);
 			
 			if(!checkSuccess(input)){
-				System.out.println("Incorrect Password");
-				return false;
+				ScreenManager.displayStatusMessage("Incorrect Password");
+				return "";
 			}
 			
-			return true;
+			String sessionID = receiveMessage(input);
+			receiveToDoList(input);
+			
+			return sessionID;
 			
 		}catch (IOException e) {
 			System.out.println(e);
@@ -158,11 +169,9 @@ public class ApplicationWebLoader {
 		}catch(InvalidCommunicationException e){
 			e.printStackTrace();
 			System.out.println("Server Error: try another time.");
-			return false;
 		}catch(NoSuchAlgorithmException e){
 			e.printStackTrace();
 			System.out.println("Cannot connect as hashing algorithm is not implemented!");
-			return false;
 		}
 		finally{
 			if(connection != null){
@@ -174,10 +183,10 @@ public class ApplicationWebLoader {
 				}
 			}
 		}
-		return false;
+		return "";
 	}
 	
-	public boolean download(String sessionID){
+	public boolean loginWithSession(String sessionID){
 		SSLSocket connection = null;
 		try {
 			connection = obtainServerConnection();
@@ -189,18 +198,15 @@ public class ApplicationWebLoader {
 				output.println(sessionID);
 				
 				String JSON = input.readLine();
-				if(JSON.equals("LIST")){
-					JSON = input.readLine();
-					if(JSON != null){
-						System.out.println(JSON);
-						downloadedList = new ToDoList(JSON);
-						return true;
-					}
-				}
+				receiveToDoList(input);
+				return true;
 			}
 		}catch (IOException e) {
 			System.out.println(e);
 			System.out.println("Server Connection Failed! Loading from file...");
+		}catch(InvalidCommunicationException e){
+			System.out.println(e);
+			System.out.println("Server Error, try another time.");
 		}finally{
 			if(connection != null){
 				try {

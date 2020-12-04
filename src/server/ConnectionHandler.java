@@ -45,7 +45,10 @@ public class ConnectionHandler implements Runnable{
 				
 				Session userSession = checkLogin(in, out);
 				if(userSession.isValid()){
+					addNewSession(userSession);
+					
 					out.println("VALID");
+					out.println(userSession.getSessionID());
 					serveToDoList(in, out, userSession.getUserID());
 				}else{
 					out.println("FAIL");
@@ -67,6 +70,18 @@ public class ConnectionHandler implements Runnable{
 			System.out.println("Serving List: " + ToDoList.toJson());
 		} catch (DuplicateUserException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public void addNewSession(Session userSession){
+		boolean addedSuccessfully = false;
+		while(!addedSuccessfully){
+			try{
+				Database.addNewUserSession(userSession);
+				addedSuccessfully = true;
+			}catch(DuplicateSessionException e){
+				userSession.resetSessionID();
+			}
 		}
 	}
 	

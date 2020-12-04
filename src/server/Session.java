@@ -3,12 +3,12 @@ package server;
 public class Session {
 	private boolean valid;
 	private String userID;
-	private String sessionKey;
+	private String sessionID;
 	
-	public Session(String userID, String sessionKey){
+	public Session(String userID, String sessionID){
 		valid = true;
 		this.userID = userID;
-		this.sessionKey = sessionKey;
+		this.sessionID = sessionID;
 	}
 	
 	public static Session buildInvalidSession(){
@@ -29,7 +29,11 @@ public class Session {
 		return userID;
 	}
 	
-	public String getSessionKey(){
-		return sessionKey;
+	public String getSessionID(){
+		return sessionID;
+	}
+	
+	public void resetSessionID(){
+		sessionID = cryptographyTools.StringGenerator.generateRandomAlphanumericString(64);
 	}
 }

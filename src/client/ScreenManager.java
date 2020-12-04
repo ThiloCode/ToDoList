@@ -36,6 +36,15 @@ public class ScreenManager {
 		}
 	}
 	
+	public static void displayInlinePrompt(String prompt){
+		if(!(prompt == null) && !prompt.equals("")){
+			System.out.println();
+			printSolidLine();
+			System.out.println();
+			System.out.print(prompt);
+		}
+	}
+	
 	//prompts the user for input screen, should not be reset immediately after this is called
 	public static void displayPrompt(String prompt){
 		if(!(prompt == null) && !prompt.equals("")){

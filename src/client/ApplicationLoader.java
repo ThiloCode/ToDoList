@@ -68,11 +68,14 @@ public class ApplicationLoader {
 			
 			objectStream.close();
 			
-			
 			outputStream = new FileOutputStream("session.txt");
 			objectStream = new ObjectOutputStream(outputStream);
 			
-			objectStream.writeObject(sessionID);
+			if(sessionID == null){
+				objectStream.writeObject("");
+			}else{
+				objectStream.writeObject(sessionID);
+			}
 			
 			objectStream.close();
 		}catch(IOException e){

@@ -78,16 +78,14 @@ public class Application {
 		ToDoList remoteToDoList = null;
 		
 		ApplicationWebLoader webLoader = new ApplicationWebLoader();
-		if(Application.sessionID == null){
+		if(Application.sessionID.equals("")){
 			try {
-				webLoader.login();
+				Application.sessionID = webLoader.loginWithUsernameAndPassword();
 			} catch (NoConsoleException e) {
 				e.printStackTrace();
 			}
 		}else{
-			if(webLoader.download(Application.sessionID)){
-				remoteToDoList = webLoader.getDownloadedList();
-			}
+			webLoader.loginWithSession(Application.sessionID);
 		}
 		
 		localToDoList = appLoader.load();
