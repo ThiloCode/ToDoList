@@ -88,10 +88,9 @@ public class Application {
 	public void start(){
 		ApplicationLoader appLoader = new ApplicationLoader();
 		Application.sessionID = appLoader.readSessionID();
-		
+				
 		ToDoList localToDoList = appLoader.load();
 		ToDoList remoteToDoList = getRemoteToDoList(sessionID);
-		 
 		
 		toDoList = chooseMostRecentList(localToDoList, remoteToDoList);
 		if(toDoList == null){

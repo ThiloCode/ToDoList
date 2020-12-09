@@ -54,6 +54,10 @@ public class ApplicationLoader {
 				}
 			}
 		}
+		
+		if(sessionID == null){
+			sessionID = "";
+		}
 		return sessionID;
 	}
 	
